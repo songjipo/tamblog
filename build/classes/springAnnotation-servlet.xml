@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  
+      http://www.springframework.org/schema/beans/spring-beans-4.0.xsd  
+      http://www.springframework.org/schema/context  
+      http://www.springframework.org/schema/context/spring-context.xsd  
+      http://www.springframework.org/schema/mvc  
+      http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+      http://www.springframework.org/schema/tx
+      http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+
+	<!-- 自动扫描controller包下的所有类，使其认为spring mvc的控制器 -->
+	<context:component-scan base-package="com.tjck.tamblog"/>
+	<!-- 开启注解 -->
+	<mvc:annotation-driven/>
+	
+	<!-- Spring MVC JSON配置 -->
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<bean id="fastJsonHttpMessageConverter" class="com.tjck.tamblog.utils.FastJsonHttpMessageConverter">
+					<property name="supportedMediaTypes">
+						<list>
+							<value>text/html;charset=UTF-8</value><!-- 避免IE出现下载JSON文件的情况 -->
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 默认访问跳转到登录页面(即定义无需Controller的url<->view直接映射) -->  
+    <mvc:view-controller path="/" view-name="forward:/login.jsp"/>
+    
+	<!-- 过滤静态资源访问 -->
+	<mvc:resources location="/images/" mapping="/images/**" />
+	<mvc:resources location="/js/" mapping="/js/**" />
+	<mvc:resources location="/upload/" mapping="/upload/**" />
+	<mvc:resources location="/css/" mapping="/css/**" />
+	
+	<!-- 配置shiro框架的过滤器工厂对象 -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<!-- 注入安全管理器对象 -->
+		<property name="securityManager" ref="securityManager"/>
+		<!-- 注入相关页面访问URL -->
+		<property name="loginUrl" value="/"/>
+		<!-- <property name="successUrl" value="/index.jsp"/> -->
+		<property name="unauthorizedUrl" value="/unauthorized.jsp"/>
+		<!--注入URL拦截规则 -->
+		<property name="filterChainDefinitions">
+			<value>
+				/css/** = anon
+				/js/** = anon
+				/images/** = anon
+				/admin/login = anon
+				/admin/main = authc
+				/admin/index = authc
+				/admin/logout = authc
+				/function/getmenu = anon
+				/function/getfunctions = anon
+				/function/getall = anon
+				/function/getbyid = anon
+				/role/getall = anon
+				/role/getbyid = anon
+				/user/editPwd = anon
+				/school/getschool = anon
+				/classes/getclasses = anon
+				/classes/getbyid = anon
+				/classes/getclbyid = anon
+				/classes/getall = anon
+				/classes/getbyteacherid = anon
+				/wx/** = anon
+				/upload/** = anon
+				/* = authc
+				<!-- 用户权限拦截 --> 
+				/function/list = perms["function-list"]
+				/function/listFunction = perms["function-listFunction"]
+				/function/addPage = perms["function-addPage"]
+				/function/addFunction = perms["function-add"]
+				/function/editPage = perms["function-editPage"]
+				/function/editFunction = perms["function-edit"]
+				/function/deleteBatch = perms["function-delete"]
+				/function/restoreBatch = perms["function-restore"]
+				<!-- 角色拦截权限 -->
+				/role/list = perms["role-list"]
+				/role/listRole = perms["role-listRole"]
+				/role/addPage = perms["role-addPage"]
+				/role/addRole = perms["role-add"]
+				/role/editPage = perms["role-editPage"]
+				/role/editRole = perms["role-edit"]
+				/role/deleteBatch = perms["role-delete"]
+				<!-- 用户权限拦截 -->
+				/user/list = perms["user-list"]
+				/user/listUser = perms["user-listUser"]
+				/user/addPage = perms["user-addPage"]
+				/user/addUser = perms["user-add"]
+				/user/editPage = perms["user-editPage"]
+				/user/editUser = perms["user-edit"]
+				/user/deleteBatch = perms["user-delete"]
+				/user/restoreBatch = perms["user-restore"]
+				/user/listTUser = perms["user-listTUser"]
+				/user/listPUser = perms["user-listPUser"]
+				/user/listWXUser = perms["user-listWXUser"]
+				<!-- 学校(幼儿园)权限拦截 -->
+				/school/list = perms["school-list"]
+				/school/listSchool = perms["school-listSchool"]
+				/school/addPage = perms["school-addPage"]
+				/school/addSchool = perms["school-add"]
+				/school/editPage = perms["school-editPage"]
+				/school/editSchool = perms["school-edit"]
+				/school/deleteBatch = perms["school-delete"]
+				/school/restoreBatch = perms["school-restore"]
+				<!-- 关系维护权限拦截 -->
+				/relation/list = perms["relation-list"]
+				/relation/listRelation = perms["relation-listRelation"]
+				/relation/addPage = perms["relation-addPage"]
+				/relation/addRelation = perms["relation-add"]
+				/relation/editPage = perms["relation-editPage"]
+				/relation/editRelation = perms["relation-edit"]
+				<!-- 教师权限拦截 -->
+				/teacher/list = perms["teacher-list"]
+				/teacher/listTeacher = perms["teacher-listTeacher"]
+				/teacher/addPage = perms["teacher-addPage"]
+				/teacher/addTeacher = perms["teacher-add"]
+				/teacher/editPage = perms["teacher-editPage"]
+				/teacher/editTeacher = perms["teacher-edit"]
+				/teacher/deleteBatch = perms["teacher-delete"]
+				/teacher/restoreBatch = perms["teacher-restore"]
+				<!-- 班级权限拦截 -->
+				/classes/list = perms["classes-list"]
+				/classes/listClasses = perms["classes-listClasses"]
+				/classes/addPage = perms["classes-addPage"]
+				/classes/addClasses = perms["classes-add"]
+				/classes/editPage = perms["classes-editPage"]
+				/classes/editClasses = perms["classes-edit"]
+				/classes/deleteBatch = perms["classes-delete"]
+				/classes/restoreBatch = perms["classes-restore"]
+				<!-- 学生权限拦截 -->
+				/student/list = perms["student-list"]
+				/student/listStudent = perms["student-listStudent"]
+				/student/addPage = perms["student-addPage"]
+				/student/addStudent = perms["student-add"]
+				/student/editPage = perms["student-editPage"]
+				/student/editStudent = perms["student-edit"]
+				/student/deleteBatch = perms["student-delete"]
+				/student/restoreBatch = perms["student-restore"]
+        		/student/addParentPage = perms["student-bindPage"]
+        		/student/addParent = perms["student-bind"]
+        		<!-- 家长权限拦截 -->
+        		/parent/list = perms["parent-list"]
+				/parent/listParent = perms["parent-listParent"]
+				<!-- 卡片权限拦截 -->
+				/card/list = perms["stucard-list"]
+				/card/listCard = perms["stucard-listCard"]
+				/card/deleteBatch = perms["stucard-delete"]
+				/card/restoreBatch = perms["stucard-restore"]
+				<!-- 考勤权限拦截 -->
+				/sattend/list = perms["sattend-list"]
+				/sattend/listAttend = perms["sattend-listAttend"]
+				/sattend/editPage = perms["sattend-editPage"]
+			</value>
+		</property>
+	</bean>
+	
+	<!-- 注册安全管理器对象 -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="realm" ref="tamblogRealm"/>
+		<!-- 注入缓存管理器 -->
+		<property name="cacheManager" ref="cacheManager"/>
+	</bean>
+	
+	<!-- 注册缓存管理器 -->
+	<bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+		<!-- 注入ehcache的配置文件 -->
+		<property name="cacheManagerConfigFile" value="classpath:ehcache.xml"/>
+	</bean>
+	
+	<!-- 注册realm -->
+	<bean id="tamblogRealm" class="com.tjck.tamblog.service.impl.TamblogRealm"></bean>
+	
+	<!-- 开启shiro框架注解支持 -->
+	<bean id="defaultAdvisorAutoProxyCreator" 
+		class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator">
+			<!-- 必须使用cglib方式为对象创建代理对象 -->
+		<property name="proxyTargetClass" value="true"/>
+	</bean>
+	
+	<!-- 配置shiro框架提供的切面类，用于创建代理对象 -->
+	<bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor"/>
+
+	<!-- 对模型视图名称的解析，即在模型视图名称添加前后缀 -->
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/jsp/"></property>
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+
+	<!-- 文件上传设置 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="utf-8" />
+		<property name="maxUploadSize" value="10485760000" />
+		<property name="maxInMemorySize" value="40960" />
+	</bean>
+</beans>  
